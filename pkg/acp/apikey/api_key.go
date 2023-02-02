@@ -65,17 +65,27 @@ func NewHandler(cfg *Config, name string) (*Handler, error) {
 		return nil, errors.New("at least one of header, query or cookie is required")
 	}
 
-	keys := make(map[string]key)
-	uniqIDs := make(map[string]struct{})
+	if len(cfg.Keys) == 0 {
+		return nil, errors.New("at least one key must be defined")
+	}
+
+	keys := make(map[string]key, len(cfg.Keys))
+	uniqIDs := make(map[string]struct{}, len(cfg.Keys))
+	uniqValues := make(map[string]struct{}, len(cfg.Keys))
 	for _, k := range cfg.Keys {
 		if k.ID == "" || k.Value == "" {
 			return nil, errors.New("empty ID or value")
 		}
 
 		if _, ok := uniqIDs[k.ID]; ok {
-			return nil, fmt.Errorf("duplicated ID %q", k.ID)
+			return nil, fmt.Errorf("duplicated key ID %q", k.ID)
 		}
 		uniqIDs[k.ID] = struct{}{}
+
+		if _, ok := uniqValues[k.Value]; ok {
+			return nil, fmt.Errorf("duplicated key value %q", k.Value)
+		}
+		uniqValues[k.Value] = struct{}{}
 
 		md := make(map[string]interface{}, len(k.Metadata)+1)
 		for mk, mv := range k.Metadata {

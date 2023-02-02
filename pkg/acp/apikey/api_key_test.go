@@ -38,6 +38,13 @@ func TestNewHandler(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			desc: "missing keys",
+			cfg: Config{
+				Header: "Api-Key",
+			},
+			wantErr: true,
+		},
+		{
 			desc: "ill-formed key, id cannot be empty",
 			cfg: Config{
 				Header: "Api-Key",
@@ -58,6 +65,40 @@ func TestNewHandler(t *testing.T) {
 					{
 						ID:    "id-1",
 						Value: "",
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			desc: "ill-formed keys, duplicated key ID",
+			cfg: Config{
+				Header: "Api-Key",
+				Keys: []Key{
+					{
+						ID:    "id",
+						Value: "",
+					},
+					{
+						ID:    "id",
+						Value: "",
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			desc: "ill-formed keys, duplicated key value",
+			cfg: Config{
+				Header: "Api-Key",
+				Keys: []Key{
+					{
+						ID:    "id-1",
+						Value: "value",
+					},
+					{
+						ID:    "id-2",
+						Value: "value",
 					},
 				},
 			},
