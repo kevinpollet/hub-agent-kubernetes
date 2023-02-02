@@ -24,7 +24,6 @@ import (
 	"net/url"
 
 	"github.com/rs/zerolog/log"
-	"github.com/traefik/hub-agent-kubernetes/pkg/acp/expr"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -44,18 +43,13 @@ type Key struct {
 	Value    string            `json:"value"`
 }
 
-type key struct {
-	ID       string
-	Metadata map[string]interface{}
-}
-
 // Handler is an API Key ACP Handler.
 type Handler struct {
 	name       string
 	header     string
 	query      string
 	cookie     string
-	keys       map[string]key
+	keys       map[string]Key
 	fwdHeaders map[string]string
 }
 
@@ -69,7 +63,7 @@ func NewHandler(cfg *Config, name string) (*Handler, error) {
 		return nil, errors.New("at least one key must be defined")
 	}
 
-	keys := make(map[string]key, len(cfg.Keys))
+	keys := make(map[string]Key, len(cfg.Keys))
 	uniqIDs := make(map[string]struct{}, len(cfg.Keys))
 	uniqValues := make(map[string]struct{}, len(cfg.Keys))
 	for _, k := range cfg.Keys {
@@ -87,14 +81,18 @@ func NewHandler(cfg *Config, name string) (*Handler, error) {
 		}
 		uniqValues[k.Value] = struct{}{}
 
-		md := make(map[string]interface{}, len(k.Metadata)+1)
+		md := make(map[string]string, len(k.Metadata)+1)
 		for mk, mv := range k.Metadata {
 			md[mk] = mv
 		}
 		// Key ID is not part of metadata, add is under the "_id" key.
 		md["_id"] = k.ID
 
-		keys[k.Value] = key{ID: k.ID, Metadata: md}
+		keys[k.Value] = Key{
+			ID:       k.ID,
+			Metadata: md,
+			Value:    k.Value,
+		}
 	}
 
 	return &Handler{
@@ -125,18 +123,9 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if h.fwdHeaders != nil {
-		hdrs, err := expr.PluckClaims(h.fwdHeaders, k.Metadata)
-		if err != nil {
-			l.Error().Err(err).Msg("Unable to set forwarded header")
-			http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		for name, vals := range hdrs {
-			for _, val := range vals {
-				rw.Header().Add(name, val)
-			}
+	for name, meta := range h.fwdHeaders {
+		if v, exists := k.Metadata[meta]; exists {
+			rw.Header().Add(name, v)
 		}
 	}
 
