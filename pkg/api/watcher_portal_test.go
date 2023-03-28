@@ -56,8 +56,9 @@ func Test_WatcherRun(t *testing.T) {
 	}
 
 	tests := []struct {
-		desc            string
-		platformPortals []Portal
+		desc                 string
+		platformPortals      []Portal
+		platformHubACPConfig *HubACPConfig
 
 		clusterPortals       string
 		clusterEdgeIngresses string
@@ -67,6 +68,7 @@ func Test_WatcherRun(t *testing.T) {
 		wantEdgeIngresses string
 		wantIngresses     string
 		wantSecrets       string
+		wantACP           string
 	}{
 		{
 			desc: "new portal present on the platform needs to be created on the cluster",
@@ -84,10 +86,15 @@ func Test_WatcherRun(t *testing.T) {
 					},
 				},
 			},
+			platformHubACPConfig: &HubACPConfig{
+				ClientID:     "client-id",
+				ClientSecret: "client-secret",
+			},
 			wantPortals:       "testdata/new-portal/want.portals.yaml",
 			wantEdgeIngresses: "testdata/new-portal/want.edge-ingresses.yaml",
 			wantIngresses:     "testdata/new-portal/want.ingresses.yaml",
 			wantSecrets:       "testdata/new-portal/want.secrets.yaml",
+			wantACP:           "testdata/new-portal/want.acp.yaml",
 		},
 		{
 			desc: "modified portal on the platform needs to be updated on the cluster",
@@ -105,6 +112,10 @@ func Test_WatcherRun(t *testing.T) {
 						{Name: "not-yet-verified.example.com", Verified: false},
 					},
 				},
+			},
+			platformHubACPConfig: &HubACPConfig{
+				ClientID:     "client-id",
+				ClientSecret: "client-secret",
 			},
 			clusterPortals:       "testdata/update-portal/portals.yaml",
 			clusterEdgeIngresses: "testdata/update-portal/edge-ingresses.yaml",
@@ -171,6 +182,7 @@ func Test_WatcherRun(t *testing.T) {
 					cancel()
 				}
 			})
+			client.OnGetHubACPConfigForPortal(mock.Anything).TypedReturns(test.platformHubACPConfig, nil).Maybe()
 
 			var wantCustomDomains []string
 			for _, platformPortal := range test.platformPortals {

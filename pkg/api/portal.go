@@ -51,6 +51,12 @@ type CustomDomain struct {
 	Verified bool   `json:"verified"`
 }
 
+// HubACPConfig configures the ACP used to protect the dev portal.
+type HubACPConfig struct {
+	ClientID     string `json:"clientId"`
+	ClientSecret string `json:"clientSecret"`
+}
+
 // Resource builds the v1alpha1 APIPortal resource.
 func (p *Portal) Resource() (*hubv1alpha1.APIPortal, error) {
 	var customDomains []string

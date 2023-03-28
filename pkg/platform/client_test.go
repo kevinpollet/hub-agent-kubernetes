@@ -2888,3 +2888,69 @@ func TestClient_DeleteAccess(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_GetHubACPConfigForPortal(t *testing.T) {
+	tests := []struct {
+		desc             string
+		returnStatusCode int
+		wantConfig       *api.HubACPConfig
+		wantErr          assert.ErrorAssertionFunc
+	}{
+		{
+			desc:             "get config succeeds",
+			returnStatusCode: http.StatusOK,
+			wantConfig: &api.HubACPConfig{
+				ClientID:     "client-id",
+				ClientSecret: "client-secret",
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			desc:             "get config fails",
+			returnStatusCode: http.StatusTeapot,
+			wantErr:          assert.Error,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			var callCount int
+
+			mux := http.NewServeMux()
+			mux.HandleFunc("/portals/portal-1/hub-acp-config", func(rw http.ResponseWriter, req *http.Request) {
+				callCount++
+
+				if req.Method != http.MethodGet {
+					http.Error(rw, fmt.Sprintf("unexpected method: %s", req.Method), http.StatusMethodNotAllowed)
+					return
+				}
+
+				if req.Header.Get("Authorization") != "Bearer "+testToken {
+					http.Error(rw, "Invalid token", http.StatusUnauthorized)
+					return
+				}
+
+				rw.WriteHeader(test.returnStatusCode)
+				_ = json.NewEncoder(rw).Encode(test.wantConfig)
+			})
+
+			srv := httptest.NewServer(mux)
+
+			t.Cleanup(srv.Close)
+
+			c, err := NewClient(srv.URL, testToken)
+			require.NoError(t, err)
+			c.httpClient = srv.Client()
+
+			agentCfg, err := c.GetHubACPConfigForPortal(context.Background(), "portal-1")
+			test.wantErr(t, err)
+
+			require.Equal(t, 1, callCount)
+
+			assert.Equal(t, test.wantConfig, agentCfg)
+		})
+	}
+}

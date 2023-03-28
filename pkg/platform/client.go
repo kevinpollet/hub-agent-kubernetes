@@ -645,6 +645,45 @@ func (c *Client) DeletePortal(ctx context.Context, name, lastKnownVersion string
 	return nil
 }
 
+// GetHubACPConfigForPortal returns the ACP configuration used to protect dev portals.
+func (c *Client) GetHubACPConfigForPortal(ctx context.Context, name string) (*api.HubACPConfig, error) {
+	baseURL, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "portals", name, "hub-acp-config"))
+	if err != nil {
+		return nil, fmt.Errorf("parse endpoint: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL.String(), http.NoBody)
+	if err != nil {
+		return nil, fmt.Errorf("build request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+c.token)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		all, _ := io.ReadAll(resp.Body)
+
+		apiErr := APIError{StatusCode: resp.StatusCode}
+		if err = json.Unmarshal(all, &apiErr); err != nil {
+			apiErr.Message = string(all)
+		}
+
+		return nil, apiErr
+	}
+
+	var cfg api.HubACPConfig
+	if err = json.NewDecoder(resp.Body).Decode(&cfg); err != nil {
+		return nil, fmt.Errorf("decode Hub ACP config for portal %s: %w", name, err)
+	}
+
+	return &cfg, nil
+}
+
 // CreateGateway creates a gateway.
 func (c *Client) CreateGateway(ctx context.Context, createReq *CreateGatewayReq) (*api.Gateway, error) {
 	body, err := json.Marshal(createReq)
