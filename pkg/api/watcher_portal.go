@@ -45,7 +45,6 @@ const portalCustomDomainSecretNamePrefix = "hub-certificate-portal-custom-domain
 // PlatformClient for the API service.
 type PlatformClient interface {
 	GetPortals(ctx context.Context) ([]Portal, error)
-	GetHubACPConfigForPortal(ctx context.Context, name string) (*HubACPConfig, error)
 	GetWildcardCertificate(ctx context.Context) (edgeingress.Certificate, error)
 	GetCertificateByDomains(ctx context.Context, domains []string) (edgeingress.Certificate, error)
 	GetGateways(ctx context.Context) ([]Gateway, error)
@@ -232,7 +231,7 @@ func (w *WatcherPortal) createPortal(ctx context.Context, portal *Portal) error 
 		Str("name", obj.Name).
 		Msg("APIPortal created")
 
-	return w.syncChildResources(ctx, obj)
+	return w.syncChildResources(ctx, obj, portal.HubACPConfig)
 }
 
 func (w *WatcherPortal) updatePortal(ctx context.Context, oldPortal *hubv1alpha1.APIPortal, newPortal *Portal) error {
@@ -254,7 +253,7 @@ func (w *WatcherPortal) updatePortal(ctx context.Context, oldPortal *hubv1alpha1
 			Msg("APIPortal updated")
 	}
 
-	return w.syncChildResources(ctx, obj)
+	return w.syncChildResources(ctx, obj, newPortal.HubACPConfig)
 }
 
 func (w *WatcherPortal) cleanPortals(ctx context.Context, portals map[string]*hubv1alpha1.APIPortal) {
@@ -278,8 +277,8 @@ func (w *WatcherPortal) cleanPortals(ctx context.Context, portals map[string]*hu
 	}
 }
 
-func (w *WatcherPortal) syncChildResources(ctx context.Context, portal *hubv1alpha1.APIPortal) error {
-	acp, err := w.upsertPortalACP(ctx, portal)
+func (w *WatcherPortal) syncChildResources(ctx context.Context, portal *hubv1alpha1.APIPortal, hubACPConfig OIDCConfig) error {
+	acp, err := w.upsertPortalACP(ctx, portal, hubACPConfig)
 	if err != nil {
 		return fmt.Errorf("upsert portal ACP: %w", err)
 	}
@@ -303,18 +302,13 @@ func (w *WatcherPortal) syncChildResources(ctx context.Context, portal *hubv1alp
 	return nil
 }
 
-func (w *WatcherPortal) upsertPortalACP(ctx context.Context, portal *hubv1alpha1.APIPortal) (*hubv1alpha1.AccessControlPolicy, error) {
+func (w *WatcherPortal) upsertPortalACP(ctx context.Context, portal *hubv1alpha1.APIPortal, hubACPConfig OIDCConfig) (*hubv1alpha1.AccessControlPolicy, error) {
 	acpName, err := getACPPortalName(portal.Name)
 	if err != nil {
 		return nil, fmt.Errorf("get ACP name: %w", err)
 	}
 
-	hubACPCfg, err := w.platform.GetHubACPConfigForPortal(ctx, portal.Name)
-	if err != nil {
-		return nil, fmt.Errorf("get ACP config: %w", err)
-	}
-
-	if err = w.upsertACPSecret(ctx, portal, acpName, hubACPCfg.ClientSecret); err != nil {
+	if err = w.upsertACPSecret(ctx, portal, acpName, hubACPConfig.ClientSecret); err != nil {
 		return nil, fmt.Errorf("upsert ACP secret: %w", err)
 	}
 
@@ -337,7 +331,7 @@ func (w *WatcherPortal) upsertPortalACP(ctx context.Context, portal *hubv1alpha1
 			OIDC: &hubv1alpha1.AccessControlPolicyOIDC{
 				Issuer:      w.config.PlatformIdentityProviderURL,
 				RedirectURL: "/callback",
-				ClientID:    hubACPCfg.ClientID,
+				ClientID:    hubACPConfig.ClientID,
 				Scopes:      []string{"openid", "offline_access"},
 				Session: &hubv1alpha1.Session{
 					Refresh: pointer.Bool(true),
@@ -348,6 +342,7 @@ func (w *WatcherPortal) upsertPortalACP(ctx context.Context, portal *hubv1alpha1
 				},
 				ForwardHeaders: map[string]string{
 					"Hub-Groups": "groups",
+					"Hub-Email":  "sub",
 				},
 			},
 		},

@@ -56,9 +56,8 @@ func Test_WatcherRun(t *testing.T) {
 	}
 
 	tests := []struct {
-		desc                 string
-		platformPortals      []Portal
-		platformHubACPConfig *HubACPConfig
+		desc            string
+		platformPortals []Portal
 
 		clusterPortals       string
 		clusterEdgeIngresses string
@@ -80,15 +79,15 @@ func Test_WatcherRun(t *testing.T) {
 					Gateway:     "gateway",
 					Version:     "version-1",
 					HubDomain:   "majestic-beaver-123.hub-traefik.io",
+					HubACPConfig: OIDCConfig{
+						ClientID:     "client-id",
+						ClientSecret: "client-secret",
+					},
 					CustomDomains: []CustomDomain{
 						{Name: "hello.example.com", Verified: true},
 						{Name: "welcome.example.com", Verified: true},
 					},
 				},
-			},
-			platformHubACPConfig: &HubACPConfig{
-				ClientID:     "client-id",
-				ClientSecret: "client-secret",
 			},
 			wantPortals:       "testdata/new-portal/want.portals.yaml",
 			wantEdgeIngresses: "testdata/new-portal/want.edge-ingresses.yaml",
@@ -106,16 +105,16 @@ func Test_WatcherRun(t *testing.T) {
 					Gateway:     "modified-gateway",
 					Version:     "version-2",
 					HubDomain:   "majestic-beaver-123.hub-traefik.io",
+					HubACPConfig: OIDCConfig{
+						ClientID:     "client-id",
+						ClientSecret: "client-secret",
+					},
 					CustomDomains: []CustomDomain{
 						{Name: "hello.example.com", Verified: true},
 						{Name: "new.example.com", Verified: true},
 						{Name: "not-yet-verified.example.com", Verified: false},
 					},
 				},
-			},
-			platformHubACPConfig: &HubACPConfig{
-				ClientID:     "client-id",
-				ClientSecret: "client-secret",
 			},
 			clusterPortals:       "testdata/update-portal/portals.yaml",
 			clusterEdgeIngresses: "testdata/update-portal/edge-ingresses.yaml",
@@ -182,7 +181,6 @@ func Test_WatcherRun(t *testing.T) {
 					cancel()
 				}
 			})
-			client.OnGetHubACPConfigForPortal(mock.Anything).TypedReturns(test.platformHubACPConfig, nil).Maybe()
 
 			var wantCustomDomains []string
 			for _, platformPortal := range test.platformPortals {

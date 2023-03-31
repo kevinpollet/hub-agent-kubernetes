@@ -129,10 +129,6 @@ func (_c *platformClientGetAPIsCall) OnGetGateways() *platformClientGetGatewaysC
 	return _c.Parent.OnGetGateways()
 }
 
-func (_c *platformClientGetAPIsCall) OnGetHubACPConfigForPortal(name string) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortal(name)
-}
-
 func (_c *platformClientGetAPIsCall) OnGetPortals() *platformClientGetPortalsCall {
 	return _c.Parent.OnGetPortals()
 }
@@ -159,10 +155,6 @@ func (_c *platformClientGetAPIsCall) OnGetCollectionsRaw() *platformClientGetCol
 
 func (_c *platformClientGetAPIsCall) OnGetGatewaysRaw() *platformClientGetGatewaysCall {
 	return _c.Parent.OnGetGatewaysRaw()
-}
-
-func (_c *platformClientGetAPIsCall) OnGetHubACPConfigForPortalRaw(name interface{}) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortalRaw(name)
 }
 
 func (_c *platformClientGetAPIsCall) OnGetPortalsRaw() *platformClientGetPortalsCall {
@@ -276,10 +268,6 @@ func (_c *platformClientGetAccessesCall) OnGetGateways() *platformClientGetGatew
 	return _c.Parent.OnGetGateways()
 }
 
-func (_c *platformClientGetAccessesCall) OnGetHubACPConfigForPortal(name string) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortal(name)
-}
-
 func (_c *platformClientGetAccessesCall) OnGetPortals() *platformClientGetPortalsCall {
 	return _c.Parent.OnGetPortals()
 }
@@ -306,10 +294,6 @@ func (_c *platformClientGetAccessesCall) OnGetCollectionsRaw() *platformClientGe
 
 func (_c *platformClientGetAccessesCall) OnGetGatewaysRaw() *platformClientGetGatewaysCall {
 	return _c.Parent.OnGetGatewaysRaw()
-}
-
-func (_c *platformClientGetAccessesCall) OnGetHubACPConfigForPortalRaw(name interface{}) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortalRaw(name)
 }
 
 func (_c *platformClientGetAccessesCall) OnGetPortalsRaw() *platformClientGetPortalsCall {
@@ -424,10 +408,6 @@ func (_c *platformClientGetCertificateByDomainsCall) OnGetGateways() *platformCl
 	return _c.Parent.OnGetGateways()
 }
 
-func (_c *platformClientGetCertificateByDomainsCall) OnGetHubACPConfigForPortal(name string) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortal(name)
-}
-
 func (_c *platformClientGetCertificateByDomainsCall) OnGetPortals() *platformClientGetPortalsCall {
 	return _c.Parent.OnGetPortals()
 }
@@ -454,10 +434,6 @@ func (_c *platformClientGetCertificateByDomainsCall) OnGetCollectionsRaw() *plat
 
 func (_c *platformClientGetCertificateByDomainsCall) OnGetGatewaysRaw() *platformClientGetGatewaysCall {
 	return _c.Parent.OnGetGatewaysRaw()
-}
-
-func (_c *platformClientGetCertificateByDomainsCall) OnGetHubACPConfigForPortalRaw(name interface{}) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortalRaw(name)
 }
 
 func (_c *platformClientGetCertificateByDomainsCall) OnGetPortalsRaw() *platformClientGetPortalsCall {
@@ -571,10 +547,6 @@ func (_c *platformClientGetCollectionsCall) OnGetGateways() *platformClientGetGa
 	return _c.Parent.OnGetGateways()
 }
 
-func (_c *platformClientGetCollectionsCall) OnGetHubACPConfigForPortal(name string) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortal(name)
-}
-
 func (_c *platformClientGetCollectionsCall) OnGetPortals() *platformClientGetPortalsCall {
 	return _c.Parent.OnGetPortals()
 }
@@ -601,10 +573,6 @@ func (_c *platformClientGetCollectionsCall) OnGetCollectionsRaw() *platformClien
 
 func (_c *platformClientGetCollectionsCall) OnGetGatewaysRaw() *platformClientGetGatewaysCall {
 	return _c.Parent.OnGetGatewaysRaw()
-}
-
-func (_c *platformClientGetCollectionsCall) OnGetHubACPConfigForPortalRaw(name interface{}) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortalRaw(name)
 }
 
 func (_c *platformClientGetCollectionsCall) OnGetPortalsRaw() *platformClientGetPortalsCall {
@@ -718,10 +686,6 @@ func (_c *platformClientGetGatewaysCall) OnGetGateways() *platformClientGetGatew
 	return _c.Parent.OnGetGateways()
 }
 
-func (_c *platformClientGetGatewaysCall) OnGetHubACPConfigForPortal(name string) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortal(name)
-}
-
 func (_c *platformClientGetGatewaysCall) OnGetPortals() *platformClientGetPortalsCall {
 	return _c.Parent.OnGetPortals()
 }
@@ -750,163 +714,11 @@ func (_c *platformClientGetGatewaysCall) OnGetGatewaysRaw() *platformClientGetGa
 	return _c.Parent.OnGetGatewaysRaw()
 }
 
-func (_c *platformClientGetGatewaysCall) OnGetHubACPConfigForPortalRaw(name interface{}) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortalRaw(name)
-}
-
 func (_c *platformClientGetGatewaysCall) OnGetPortalsRaw() *platformClientGetPortalsCall {
 	return _c.Parent.OnGetPortalsRaw()
 }
 
 func (_c *platformClientGetGatewaysCall) OnGetWildcardCertificateRaw() *platformClientGetWildcardCertificateCall {
-	return _c.Parent.OnGetWildcardCertificateRaw()
-}
-
-func (_m *platformClientMock) GetHubACPConfigForPortal(_ context.Context, name string) (*HubACPConfig, error) {
-	_ret := _m.Called(name)
-
-	if _rf, ok := _ret.Get(0).(func(string) (*HubACPConfig, error)); ok {
-		return _rf(name)
-	}
-
-	_ra0, _ := _ret.Get(0).(*HubACPConfig)
-	_rb1 := _ret.Error(1)
-
-	return _ra0, _rb1
-}
-
-func (_m *platformClientMock) OnGetHubACPConfigForPortal(name string) *platformClientGetHubACPConfigForPortalCall {
-	return &platformClientGetHubACPConfigForPortalCall{Call: _m.Mock.On("GetHubACPConfigForPortal", name), Parent: _m}
-}
-
-func (_m *platformClientMock) OnGetHubACPConfigForPortalRaw(name interface{}) *platformClientGetHubACPConfigForPortalCall {
-	return &platformClientGetHubACPConfigForPortalCall{Call: _m.Mock.On("GetHubACPConfigForPortal", name), Parent: _m}
-}
-
-type platformClientGetHubACPConfigForPortalCall struct {
-	*mock.Call
-	Parent *platformClientMock
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) Panic(msg string) *platformClientGetHubACPConfigForPortalCall {
-	_c.Call = _c.Call.Panic(msg)
-	return _c
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) Once() *platformClientGetHubACPConfigForPortalCall {
-	_c.Call = _c.Call.Once()
-	return _c
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) Twice() *platformClientGetHubACPConfigForPortalCall {
-	_c.Call = _c.Call.Twice()
-	return _c
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) Times(i int) *platformClientGetHubACPConfigForPortalCall {
-	_c.Call = _c.Call.Times(i)
-	return _c
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) WaitUntil(w <-chan time.Time) *platformClientGetHubACPConfigForPortalCall {
-	_c.Call = _c.Call.WaitUntil(w)
-	return _c
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) After(d time.Duration) *platformClientGetHubACPConfigForPortalCall {
-	_c.Call = _c.Call.After(d)
-	return _c
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) Run(fn func(args mock.Arguments)) *platformClientGetHubACPConfigForPortalCall {
-	_c.Call = _c.Call.Run(fn)
-	return _c
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) Maybe() *platformClientGetHubACPConfigForPortalCall {
-	_c.Call = _c.Call.Maybe()
-	return _c
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) TypedReturns(a *HubACPConfig, b error) *platformClientGetHubACPConfigForPortalCall {
-	_c.Call = _c.Return(a, b)
-	return _c
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) ReturnsFn(fn func(string) (*HubACPConfig, error)) *platformClientGetHubACPConfigForPortalCall {
-	_c.Call = _c.Return(fn)
-	return _c
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) TypedRun(fn func(string)) *platformClientGetHubACPConfigForPortalCall {
-	_c.Call = _c.Call.Run(func(args mock.Arguments) {
-		_name := args.String(0)
-		fn(_name)
-	})
-	return _c
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetAPIs() *platformClientGetAPIsCall {
-	return _c.Parent.OnGetAPIs()
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetAccesses() *platformClientGetAccessesCall {
-	return _c.Parent.OnGetAccesses()
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetCertificateByDomains(domains []string) *platformClientGetCertificateByDomainsCall {
-	return _c.Parent.OnGetCertificateByDomains(domains)
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetCollections() *platformClientGetCollectionsCall {
-	return _c.Parent.OnGetCollections()
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetGateways() *platformClientGetGatewaysCall {
-	return _c.Parent.OnGetGateways()
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetHubACPConfigForPortal(name string) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortal(name)
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetPortals() *platformClientGetPortalsCall {
-	return _c.Parent.OnGetPortals()
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetWildcardCertificate() *platformClientGetWildcardCertificateCall {
-	return _c.Parent.OnGetWildcardCertificate()
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetAPIsRaw() *platformClientGetAPIsCall {
-	return _c.Parent.OnGetAPIsRaw()
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetAccessesRaw() *platformClientGetAccessesCall {
-	return _c.Parent.OnGetAccessesRaw()
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetCertificateByDomainsRaw(domains interface{}) *platformClientGetCertificateByDomainsCall {
-	return _c.Parent.OnGetCertificateByDomainsRaw(domains)
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetCollectionsRaw() *platformClientGetCollectionsCall {
-	return _c.Parent.OnGetCollectionsRaw()
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetGatewaysRaw() *platformClientGetGatewaysCall {
-	return _c.Parent.OnGetGatewaysRaw()
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetHubACPConfigForPortalRaw(name interface{}) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortalRaw(name)
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetPortalsRaw() *platformClientGetPortalsCall {
-	return _c.Parent.OnGetPortalsRaw()
-}
-
-func (_c *platformClientGetHubACPConfigForPortalCall) OnGetWildcardCertificateRaw() *platformClientGetWildcardCertificateCall {
 	return _c.Parent.OnGetWildcardCertificateRaw()
 }
 
@@ -1013,10 +825,6 @@ func (_c *platformClientGetPortalsCall) OnGetGateways() *platformClientGetGatewa
 	return _c.Parent.OnGetGateways()
 }
 
-func (_c *platformClientGetPortalsCall) OnGetHubACPConfigForPortal(name string) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortal(name)
-}
-
 func (_c *platformClientGetPortalsCall) OnGetPortals() *platformClientGetPortalsCall {
 	return _c.Parent.OnGetPortals()
 }
@@ -1043,10 +851,6 @@ func (_c *platformClientGetPortalsCall) OnGetCollectionsRaw() *platformClientGet
 
 func (_c *platformClientGetPortalsCall) OnGetGatewaysRaw() *platformClientGetGatewaysCall {
 	return _c.Parent.OnGetGatewaysRaw()
-}
-
-func (_c *platformClientGetPortalsCall) OnGetHubACPConfigForPortalRaw(name interface{}) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortalRaw(name)
 }
 
 func (_c *platformClientGetPortalsCall) OnGetPortalsRaw() *platformClientGetPortalsCall {
@@ -1160,10 +964,6 @@ func (_c *platformClientGetWildcardCertificateCall) OnGetGateways() *platformCli
 	return _c.Parent.OnGetGateways()
 }
 
-func (_c *platformClientGetWildcardCertificateCall) OnGetHubACPConfigForPortal(name string) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortal(name)
-}
-
 func (_c *platformClientGetWildcardCertificateCall) OnGetPortals() *platformClientGetPortalsCall {
 	return _c.Parent.OnGetPortals()
 }
@@ -1190,10 +990,6 @@ func (_c *platformClientGetWildcardCertificateCall) OnGetCollectionsRaw() *platf
 
 func (_c *platformClientGetWildcardCertificateCall) OnGetGatewaysRaw() *platformClientGetGatewaysCall {
 	return _c.Parent.OnGetGatewaysRaw()
-}
-
-func (_c *platformClientGetWildcardCertificateCall) OnGetHubACPConfigForPortalRaw(name interface{}) *platformClientGetHubACPConfigForPortalCall {
-	return _c.Parent.OnGetHubACPConfigForPortalRaw(name)
 }
 
 func (_c *platformClientGetWildcardCertificateCall) OnGetPortalsRaw() *platformClientGetPortalsCall {

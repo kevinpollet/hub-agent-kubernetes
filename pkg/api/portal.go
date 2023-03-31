@@ -40,6 +40,8 @@ type Portal struct {
 	HubDomain     string         `json:"hubDomain,omitempty"`
 	CustomDomains []CustomDomain `json:"customDomains,omitempty"`
 
+	HubACPConfig OIDCConfig `json:"hubAcpConfig"`
+
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	Version   string    `json:"version"`
@@ -51,8 +53,8 @@ type CustomDomain struct {
 	Verified bool   `json:"verified"`
 }
 
-// HubACPConfig configures the ACP used to protect the dev portal.
-type HubACPConfig struct {
+// OIDCConfig is the OIDC client configuration used to secure the access to a portal.
+type OIDCConfig struct {
 	ClientID     string `json:"clientId"`
 	ClientSecret string `json:"clientSecret"`
 }
