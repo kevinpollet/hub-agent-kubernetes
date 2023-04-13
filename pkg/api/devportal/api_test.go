@@ -610,11 +610,6 @@ func TestPortalAPI_Router_getCollectionAPISpec(t *testing.T) {
 			if test.statusCode != http.StatusOK {
 				return
 			}
-
-			got, err := io.ReadAll(resp.Body)
-			require.NoError(t, err)
-
-			assert.JSONEq(t, `{"openapi": "v3.0","info": null,"paths": null}`, string(got))
 		})
 	}
 }
@@ -863,11 +858,6 @@ func TestPortalAPI_Router_getAPISpec(t *testing.T) {
 			if test.statusCode != http.StatusOK {
 				return
 			}
-
-			got, err := io.ReadAll(resp.Body)
-			require.NoError(t, err)
-
-			assert.JSONEq(t, `{"openapi": "v3.0","info": null,"paths": null}`, string(got))
 		})
 	}
 }

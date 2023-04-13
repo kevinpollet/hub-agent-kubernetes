@@ -10,3 +10,31 @@ spec:
       - /stores/petstore
       - /petstore
       - /deliver
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: new-gateway-3695162296-headers
+  namespace: default
+spec:
+  headers:
+    accessControlAllowCredentials: true
+    accessControlAllowOriginList:
+      - "*"
+    accessControlAllowHeaders:
+      - Accept
+      - Accept-Language
+      - Content-Language
+      - Content-Type
+      - Authorization
+    accessControlAllowMethods:
+      - GET
+      - HEAD
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+      - CONNECT
+      - OPTIONS
+      - TRACE

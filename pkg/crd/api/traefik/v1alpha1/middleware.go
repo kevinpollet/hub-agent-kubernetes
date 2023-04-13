@@ -40,28 +40,43 @@ type MiddlewareSpec struct {
 	StripPrefix      *StripPrefix      `json:"stripPrefix,omitempty"`
 	StripPrefixRegex *StripPrefixRegex `json:"stripPrefixRegex,omitempty"`
 	AddPrefix        *AddPrefix        `json:"addPrefix,omitempty"`
+	Headers          *Headers          `json:"headers,omitempty"`
 }
 
 // +k8s:deepcopy-gen=true
 
 // AddPrefix holds the AddPrefix configuration.
 type AddPrefix struct {
-	Prefix string `json:"prefix,omitempty" toml:"prefix,omitempty" yaml:"prefix,omitempty" export:"true"`
+	Prefix string `json:"prefix,omitempty"`
 }
 
 // +k8s:deepcopy-gen=true
 
 // StripPrefix holds the StripPrefix configuration.
 type StripPrefix struct {
-	Prefixes   []string `json:"prefixes,omitempty" toml:"prefixes,omitempty" yaml:"prefixes,omitempty" export:"true"`
-	ForceSlash bool     `json:"forceSlash,omitempty" toml:"forceSlash,omitempty" yaml:"forceSlash,omitempty" export:"true"` // Deprecated
+	Prefixes   []string `json:"prefixes,omitempty"`
+	ForceSlash bool     `json:"forceSlash,omitempty"` // Deprecated
+}
+
+// +k8s:deepcopy-gen=true
+
+// Headers holds the Headers configuration.
+type Headers struct {
+	// AccessControlAllowCredentials defines whether the request can include user credentials.
+	AccessControlAllowCredentials bool `json:"accessControlAllowCredentials,omitempty"`
+	// AccessControlAllowHeaders defines the Access-Control-Request-Headers values sent in preflight response.
+	AccessControlAllowHeaders []string `json:"accessControlAllowHeaders,omitempty"`
+	// AccessControlAllowMethods defines the Access-Control-Request-Method values sent in preflight response.
+	AccessControlAllowMethods []string `json:"accessControlAllowMethods,omitempty"`
+	// AccessControlAllowOriginList is a list of allowable origins. Can also be a wildcard origin "*".
+	AccessControlAllowOriginList []string `json:"accessControlAllowOriginList,omitempty"`
 }
 
 // +k8s:deepcopy-gen=true
 
 // StripPrefixRegex holds the StripPrefixRegex configuration.
 type StripPrefixRegex struct {
-	Regex []string `json:"regex,omitempty" toml:"regex,omitempty" yaml:"regex,omitempty" export:"true"`
+	Regex []string `json:"regex,omitempty"`
 }
 
 // +k8s:deepcopy-gen=true

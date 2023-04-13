@@ -42,6 +42,12 @@ const (
 	headerHubEmail  = "Hub-Email"
 )
 
+// Security schemes used to secure the exposed APIs.
+const (
+	securitySchemeQueryAuth  = "query_auth"
+	securitySchemeBearerAuth = "bearer_auth"
+)
+
 // PortalAPI is a handler that exposes APIPortal information.
 type PortalAPI struct {
 	router     chi.Router
@@ -389,61 +395,84 @@ func (p *PortalAPI) getOpenAPISpec(ctx context.Context, a *hubv1alpha1.API) (*op
 }
 
 func overrideServersAndSecurity(spec *openapi3.T, domains []string, pathPrefix string) error {
-	servers, err := overrideServerDomains(spec.Servers, domains, pathPrefix)
-	if err != nil {
-		return fmt.Errorf("override global server domains: %w", err)
+	if err := setServers(spec, domains, pathPrefix); err != nil {
+		return fmt.Errorf("set servers: %w", err)
+	}
+
+	setSecurity(spec)
+	clearSpecificServersAndSecurity(spec)
+	return nil
+}
+
+func setServers(spec *openapi3.T, domains []string, pathPrefix string) error {
+	var serverPath string
+	if len(spec.Servers) > 0 && spec.Servers[0].URL != "" {
+		// TODO: Handle variable substitutions before parsing the URL. (e.g. using Servers.BasePath)
+		u, err := url.Parse(spec.Servers[0].URL)
+		if err != nil {
+			return fmt.Errorf("parse server URL %q: %w", spec.Servers[0].URL, err)
+		}
+		serverPath = u.Path
+	}
+
+	servers := make(openapi3.Servers, 0, len(domains))
+	for _, domain := range domains {
+		servers = append(servers, &openapi3.Server{
+			URL: "https://" + domain + path.Join("/", pathPrefix, serverPath),
+		})
 	}
 	spec.Servers = servers
-	spec.Security = nil
-
-	for p := range spec.Paths {
-		spec.Paths[p].Servers, err = overrideServerDomains(spec.Paths[p].Servers, domains, pathPrefix)
-		if err != nil {
-			return fmt.Errorf("override path %q server domains: %w", p, err)
-		}
-
-		for method := range spec.Paths[p].Operations() {
-			operation := spec.Paths[p].GetOperation(method)
-
-			if operation == nil || operation.Servers == nil {
-				continue
-			}
-
-			servers, err = overrideServerDomains(*operation.Servers, domains, pathPrefix)
-			if err != nil {
-				return fmt.Errorf("override path %q server domains for method %q: %w", p, method, err)
-			}
-			operation.Servers = &servers
-			operation.Security = nil
-
-			spec.Paths[p].SetOperation(method, operation)
-		}
-	}
 
 	return nil
 }
 
-func overrideServerDomains(servers openapi3.Servers, domains []string, pathPrefix string) (openapi3.Servers, error) {
-	if len(servers) == 0 || servers[0].URL == "" {
-		return servers, nil
+func setSecurity(spec *openapi3.T) {
+	if spec.Components == nil {
+		spec.Components = &openapi3.Components{}
 	}
 
-	// TODO: Handle variable substitutions before parsing the URL. (e.g. using Servers.BasePath)
-	originalServerURL := servers[0]
-	serverURL, err := url.Parse(originalServerURL.URL)
-	if err != nil {
-		return nil, fmt.Errorf("parse server url %q: %w", originalServerURL.URL, err)
+	spec.Components.SecuritySchemes = map[string]*openapi3.SecuritySchemeRef{
+		securitySchemeQueryAuth: {
+			Value: &openapi3.SecurityScheme{
+				Type: "apiKey",
+				In:   "query",
+				Name: "api_key",
+			},
+		},
+		securitySchemeBearerAuth: {
+			Value: &openapi3.SecurityScheme{
+				Type:         "http",
+				Scheme:       "bearer",
+				BearerFormat: "opaque",
+			},
+		},
 	}
 
-	var overriddenServers openapi3.Servers
-	for _, domain := range domains {
-		s := *originalServerURL
-		s.URL = "https://" + domain + path.Join("/", pathPrefix, serverURL.Path)
-
-		overriddenServers = append(overriddenServers, &s)
+	spec.Security = openapi3.SecurityRequirements{
+		{
+			securitySchemeQueryAuth:  make([]string, 0),
+			securitySchemeBearerAuth: make([]string, 0),
+		},
 	}
+}
 
-	return overriddenServers, nil
+func clearSpecificServersAndSecurity(spec *openapi3.T) {
+	for _, path := range spec.Paths {
+		if path == nil {
+			continue
+		}
+
+		path.Servers = nil
+
+		for _, op := range path.Operations() {
+			if op == nil {
+				continue
+			}
+
+			op.Servers = nil
+			op.Security = nil
+		}
+	}
 }
 
 type listResp struct {

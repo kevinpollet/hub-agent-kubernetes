@@ -8,3 +8,31 @@ spec:
   stripPrefix:
     prefixes:
       - /stores/bookstore
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: modified-gateway-713459761-headers
+  namespace: books
+spec:
+  headers:
+    accessControlAllowCredentials: true
+    accessControlAllowOriginList:
+      - "*"
+    accessControlAllowHeaders:
+      - Accept
+      - Accept-Language
+      - Content-Language
+      - Content-Type
+      - Authorization
+    accessControlAllowMethods:
+      - GET
+      - HEAD
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+      - CONNECT
+      - OPTIONS
+      - TRACE

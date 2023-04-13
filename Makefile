@@ -39,7 +39,7 @@ image: build-portal build
 
 image-dev: export GOOS := linux
 image-dev: export GOARCH := amd64
-image-dev: build
+image-dev: build-portal build
 	docker build -t $(BIN_NAME):dev . -f ./dev.Dockerfile
 
 dev: image-dev

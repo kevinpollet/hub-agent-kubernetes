@@ -15,7 +15,7 @@ metadata:
     hub.traefik.io/access-control-policy-groups: "suppliers"
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.entrypoints: tunnel-entrypoint
-    traefik.ingress.kubernetes.io/router.middlewares: "default-gateway-3056690829-stripprefix@kubernetescrd"
+    traefik.ingress.kubernetes.io/router.middlewares: "default-gateway-3056690829-stripprefix@kubernetescrd,default-gateway-3056690829-headers@kubernetescrd"
 spec:
   ingressClassName: ingress-class
   rules:
@@ -59,7 +59,7 @@ metadata:
     hub.traefik.io/access-control-policy-groups: "suppliers"
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.entrypoints: api-entrypoint
-    traefik.ingress.kubernetes.io/router.middlewares: "default-gateway-3056690829-stripprefix@kubernetescrd"
+    traefik.ingress.kubernetes.io/router.middlewares: "default-gateway-3056690829-stripprefix@kubernetescrd,default-gateway-3056690829-headers@kubernetescrd"
 spec:
   ingressClassName: ingress-class
   rules:
@@ -139,7 +139,7 @@ metadata:
     hub.traefik.io/access-control-policy-groups: "suppliers"
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.entrypoints: tunnel-entrypoint
-    traefik.ingress.kubernetes.io/router.middlewares: "books-gateway-3056690829-stripprefix@kubernetescrd"
+    traefik.ingress.kubernetes.io/router.middlewares: "books-gateway-3056690829-stripprefix@kubernetescrd,books-gateway-3056690829-headers@kubernetescrd"
 spec:
   ingressClassName: ingress-class
   rules:
@@ -176,7 +176,7 @@ metadata:
     hub.traefik.io/access-control-policy-groups: "suppliers"
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.entrypoints: api-entrypoint
-    traefik.ingress.kubernetes.io/router.middlewares: "books-gateway-3056690829-stripprefix@kubernetescrd"
+    traefik.ingress.kubernetes.io/router.middlewares: "books-gateway-3056690829-stripprefix@kubernetescrd,books-gateway-3056690829-headers@kubernetescrd"
 spec:
   ingressClassName: ingress-class
   rules:

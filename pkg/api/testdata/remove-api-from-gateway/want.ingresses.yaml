@@ -15,7 +15,7 @@ metadata:
     hub.traefik.io/access-control-policy-groups: "suppliers"
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.entrypoints: tunnel-entrypoint
-    traefik.ingress.kubernetes.io/router.middlewares: "books-modified-gateway-713459761-stripprefix@kubernetescrd"
+    traefik.ingress.kubernetes.io/router.middlewares: "books-modified-gateway-713459761-stripprefix@kubernetescrd,books-modified-gateway-713459761-headers@kubernetescrd"
 spec:
   ingressClassName: ingress-class
   rules:
@@ -52,7 +52,7 @@ metadata:
     hub.traefik.io/access-control-policy-groups: "suppliers"
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.entrypoints: api-entrypoint
-    traefik.ingress.kubernetes.io/router.middlewares: "books-modified-gateway-713459761-stripprefix@kubernetescrd"
+    traefik.ingress.kubernetes.io/router.middlewares: "books-modified-gateway-713459761-stripprefix@kubernetescrd,books-modified-gateway-713459761-headers@kubernetescrd"
 spec:
   ingressClassName: ingress-class
   rules:

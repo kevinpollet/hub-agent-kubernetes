@@ -9,19 +9,15 @@
       "url": "https://majestic-beaver-123.hub-traefik.io/api-prefix/api/v3"
     }
   ],
+  "security": [
+    {
+      "query_auth":  [],
+      "bearer_auth": []
+    }
+  ],
   "paths": {
     "/users/{id}": {
-      "servers": [
-        {
-          "url": "https://majestic-beaver-123.hub-traefik.io/api-prefix/path-custom"
-        }
-      ],
       "get": {
-        "servers": [
-          {
-            "url": "https://majestic-beaver-123.hub-traefik.io/api-prefix/path-method"
-          }
-        ],
         "operationId": "getUserItem",
         "tags": [
           "User"
@@ -375,9 +371,15 @@
       }
     },
     "securitySchemes": {
-      "secure": {
+      "query_auth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "bearer_auth": {
         "type": "http",
-        "scheme": "basic"
+        "scheme": "bearer",
+        "bearerFormat": "opaque"
       }
     }
   }

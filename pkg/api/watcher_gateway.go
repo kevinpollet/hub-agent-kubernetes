@@ -21,7 +21,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
 	"path"
+	"reflect"
 	"sort"
 	"strings"
 	"sync"
@@ -556,13 +558,19 @@ func (w *WatcherGateway) findCollections(selector *metav1.LabelSelector) ([]*hub
 
 func (w *WatcherGateway) upsertIngresses(ctx context.Context, gateway *hubv1alpha1.APIGateway, apisByNamespace map[string][]resolvedAPI) error {
 	for namespace, resolvedAPIs := range apisByNamespace {
-		traefikMiddlewareName, err := w.setupStripPrefixMiddleware(ctx, gateway.Name, resolvedAPIs, namespace)
+		stripPrefixTraefikMiddlewareName, err := w.setupStripPrefixMiddleware(ctx, gateway.Name, resolvedAPIs, namespace)
 		if err != nil {
 			return fmt.Errorf("setup stripPrefix middleware: %w", err)
 		}
 
-		err = w.upsertIngressesOnNamespace(ctx, namespace, gateway, resolvedAPIs, traefikMiddlewareName)
+		headersTraefikMiddlewareName, err := w.setupHeadersMiddleware(ctx, gateway.Name, namespace)
 		if err != nil {
+			return fmt.Errorf("setup headers middleware: %w", err)
+		}
+
+		traefikMiddlewareNames := []string{stripPrefixTraefikMiddlewareName, headersTraefikMiddlewareName}
+
+		if err = w.upsertIngressesOnNamespace(ctx, namespace, gateway, resolvedAPIs, traefikMiddlewareNames); err != nil {
 			return fmt.Errorf("build ingress for hub domain and namespace %q: %w", namespace, err)
 		}
 	}
@@ -581,21 +589,15 @@ func (w *WatcherGateway) setupStripPrefixMiddleware(ctx context.Context, gateway
 		return "", fmt.Errorf("get stripPrefix middleware name: %w", err)
 	}
 
-	existingMiddleware, existingErr := w.traefikClientSet.Middlewares(namespace).Get(ctx, name, metav1.GetOptions{})
-	if existingErr != nil && !kerror.IsNotFound(existingErr) {
-		return "", fmt.Errorf("get middleware: %w", existingErr)
+	middleware := newStripPrefixMiddleware(namespace, name, apis)
+	traefikMiddlewareName := getTraefikMiddlewareName(namespace, name)
+
+	existingMiddleware, err := w.traefikClientSet.Middlewares(namespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil && !kerror.IsNotFound(err) {
+		return "", fmt.Errorf("get middleware: %w", err)
 	}
-
-	middleware := newStripPrefixMiddleware(name, namespace, apis)
-
-	traefikMiddlewareName, err := getTraefikStripPrefixMiddlewareName(namespace, gatewayName)
-	if err != nil {
-		return "", fmt.Errorf("get Traefik stripPrefix middleware name: %w", err)
-	}
-
-	if kerror.IsNotFound(existingErr) {
-		_, err = w.traefikClientSet.Middlewares(namespace).Create(ctx, &middleware, metav1.CreateOptions{})
-		if err != nil {
+	if kerror.IsNotFound(err) {
+		if _, err = w.traefikClientSet.Middlewares(namespace).Create(ctx, &middleware, metav1.CreateOptions{}); err != nil {
 			return "", fmt.Errorf("create middleware: %w", err)
 		}
 
@@ -607,14 +609,52 @@ func (w *WatcherGateway) setupStripPrefixMiddleware(ctx context.Context, gateway
 		return traefikMiddlewareName, nil
 	}
 
-	if middleware.Spec == existingMiddleware.Spec {
+	if reflect.DeepEqual(middleware.Spec, existingMiddleware.Spec) {
 		return traefikMiddlewareName, nil
 	}
 
 	existingMiddleware.Spec = middleware.Spec
 
-	_, err = w.traefikClientSet.Middlewares(existingMiddleware.Namespace).Update(ctx, existingMiddleware, metav1.UpdateOptions{})
+	if _, err = w.traefikClientSet.Middlewares(existingMiddleware.Namespace).Update(ctx, existingMiddleware, metav1.UpdateOptions{}); err != nil {
+		return "", fmt.Errorf("update middleware: %w", err)
+	}
+
+	return traefikMiddlewareName, nil
+}
+
+func (w *WatcherGateway) setupHeadersMiddleware(ctx context.Context, gatewayName, namespace string) (string, error) {
+	name, err := getHeadersMiddlewareName(gatewayName)
 	if err != nil {
+		return "", fmt.Errorf("get headers middleware name: %w", err)
+	}
+
+	middleware := newHeadersMiddleware(namespace, name)
+	traefikMiddlewareName := getTraefikMiddlewareName(namespace, name)
+
+	existingMiddleware, err := w.traefikClientSet.Middlewares(namespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil && !kerror.IsNotFound(err) {
+		return "", fmt.Errorf("get middleware: %w", err)
+	}
+	if kerror.IsNotFound(err) {
+		if _, err = w.traefikClientSet.Middlewares(namespace).Create(ctx, &middleware, metav1.CreateOptions{}); err != nil {
+			return "", fmt.Errorf("create middleware: %w", err)
+		}
+
+		log.Debug().
+			Str("name", name).
+			Str("namespace", namespace).
+			Msg("Middleware created")
+
+		return traefikMiddlewareName, nil
+	}
+
+	if reflect.DeepEqual(middleware.Spec, existingMiddleware.Spec) {
+		return traefikMiddlewareName, nil
+	}
+
+	existingMiddleware.Spec = middleware.Spec
+
+	if _, err = w.traefikClientSet.Middlewares(existingMiddleware.Namespace).Update(ctx, existingMiddleware, metav1.UpdateOptions{}); err != nil {
 		return "", fmt.Errorf("update middleware: %w", err)
 	}
 
@@ -726,7 +766,7 @@ func (w *WatcherGateway) cleanupNamespaces(ctx context.Context, gateway *hubv1al
 	return nil
 }
 
-func (w *WatcherGateway) upsertIngressesOnNamespace(ctx context.Context, namespace string, gateway *hubv1alpha1.APIGateway, resolvedAPIs []resolvedAPI, traefikMiddlewareName string) error {
+func (w *WatcherGateway) upsertIngressesOnNamespace(ctx context.Context, namespace string, gateway *hubv1alpha1.APIGateway, resolvedAPIs []resolvedAPI, traefikMiddlewareNames []string) error {
 	managedByHub, err := labels.NewRequirement("app.kubernetes.io/managed-by", selection.Equals, []string{"traefik-hub"})
 	if err != nil {
 		return fmt.Errorf("create managed by hub requirement: %w", err)
@@ -785,7 +825,7 @@ func (w *WatcherGateway) upsertIngressesOnNamespace(ctx context.Context, namespa
 				Annotations: map[string]string{
 					"traefik.ingress.kubernetes.io/router.tls":         "true",
 					"traefik.ingress.kubernetes.io/router.entrypoints": w.config.TraefikTunnelEntryPoint,
-					"traefik.ingress.kubernetes.io/router.middlewares": traefikMiddlewareName,
+					"traefik.ingress.kubernetes.io/router.middlewares": strings.Join(traefikMiddlewareNames, ","),
 					reviewer.AnnotationHubAuth:                         "hub-api-management",
 					reviewer.AnnotationHubAuthGroup:                    groups,
 				},
@@ -877,7 +917,7 @@ func (w *WatcherGateway) upsertIngressesOnNamespace(ctx context.Context, namespa
 	return nil
 }
 
-func newStripPrefixMiddleware(name, namespace string, apis []*hubv1alpha1.API) traefikv1alpha1.Middleware {
+func newStripPrefixMiddleware(namespace, name string, apis []*hubv1alpha1.API) traefikv1alpha1.Middleware {
 	var prefixes []string
 	for _, api := range apis {
 		prefixes = append(prefixes, api.Spec.PathPrefix)
@@ -917,12 +957,58 @@ func getStripPrefixMiddlewareName(gatewayName string) (string, error) {
 	return fmt.Sprintf("%s-%d-stripprefix", gatewayName, h), nil
 }
 
-func getTraefikStripPrefixMiddlewareName(namespace, gatewayName string) (string, error) {
-	middlewareName, err := getStripPrefixMiddlewareName(gatewayName)
-	if err != nil {
-		return "", fmt.Errorf("get stripPrefix middleware name: %w", err)
+func newHeadersMiddleware(namespace, name string) traefikv1alpha1.Middleware {
+	return traefikv1alpha1.Middleware{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Middleware",
+			APIVersion: "traefik.containo.us/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: traefikv1alpha1.MiddlewareSpec{
+			Headers: &traefikv1alpha1.Headers{
+				AccessControlAllowCredentials: true,
+				AccessControlAllowOriginList:  []string{"*"},
+				AccessControlAllowHeaders: []string{
+					"Accept",
+					"Accept-Language",
+					"Content-Language",
+					"Content-Type",
+					"Authorization",
+				},
+				AccessControlAllowMethods: []string{
+					http.MethodGet,
+					http.MethodHead,
+					http.MethodPost,
+					http.MethodPut,
+					http.MethodPatch,
+					http.MethodDelete,
+					http.MethodConnect,
+					http.MethodOptions,
+					http.MethodTrace,
+				},
+			},
+		},
 	}
-	return fmt.Sprintf("%s-%s@kubernetescrd", namespace, middlewareName), nil
+}
+
+// getHeadersMiddlewareName compute the name of the Headers middleware.
+// The name follow this format: {{gateway-name}-hash({gateway-name})-headers}
+// This hash is here to reduce the chance of getting a collision on an existing secret while staying under
+// the limit of 63 characters.
+func getHeadersMiddlewareName(gatewayName string) (string, error) {
+	h, err := hash(gatewayName)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s-%d-headers", gatewayName, h), nil
+}
+
+func getTraefikMiddlewareName(namespace, middlewareName string) string {
+	return fmt.Sprintf("%s-%s@kubernetescrd", namespace, middlewareName)
 }
 
 // getHubDomainIngressName compute the ingress name for hub domain from the gateway name.

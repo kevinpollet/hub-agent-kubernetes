@@ -11,6 +11,34 @@ spec:
       - /petstore
 
 ---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: gateway-3056690829-headers
+  namespace: default
+spec:
+  headers:
+    accessControlAllowCredentials: true
+    accessControlAllowOriginList:
+      - "*"
+    accessControlAllowHeaders:
+      - Accept
+      - Accept-Language
+      - Content-Language
+      - Content-Type
+      - Authorization
+    accessControlAllowMethods:
+      - GET
+      - HEAD
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+      - CONNECT
+      - OPTIONS
+      - TRACE
+
+---
 # Middleware in the books namespace.
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
@@ -21,3 +49,31 @@ spec:
   stripPrefix:
     prefixes:
       - /stores/bookstore
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: gateway-3056690829-headers
+  namespace: books
+spec:
+  headers:
+    accessControlAllowCredentials: true
+    accessControlAllowOriginList:
+      - "*"
+    accessControlAllowHeaders:
+      - Accept
+      - Accept-Language
+      - Content-Language
+      - Content-Type
+      - Authorization
+    accessControlAllowMethods:
+      - GET
+      - HEAD
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+      - CONNECT
+      - OPTIONS
+      - TRACE
