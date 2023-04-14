@@ -39,13 +39,6 @@ func TestNewHandler(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			desc: "missing keys",
-			cfg: Config{
-				KeySource: token.Source{Header: "Api-Key"},
-			},
-			wantErr: true,
-		},
-		{
 			desc: "ill-formed key, id cannot be empty",
 			cfg: Config{
 				KeySource: token.Source{Header: "Api-Key"},

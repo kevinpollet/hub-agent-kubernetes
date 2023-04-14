@@ -57,10 +57,6 @@ func NewHandler(cfg *Config, name string) (*Handler, error) {
 		return nil, errors.New(`at least one of "header", "query" or "cookie" must be set`)
 	}
 
-	if len(cfg.Keys) == 0 {
-		return nil, errors.New("at least one key must be defined")
-	}
-
 	keys := make(map[string]Key, len(cfg.Keys))
 	uniqIDs := make(map[string]struct{}, len(cfg.Keys))
 	uniqValues := make(map[string]struct{}, len(cfg.Keys))

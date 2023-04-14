@@ -95,7 +95,6 @@ type AccessControlPolicyAPIKey struct {
 	// +kubebuilder:validation:Required
 	KeySource TokenSource `json:"keySource"`
 	// Keys define the set of authorized keys to access a protected resource.
-	// +kubebuilder:validation:MinItems:=1
 	Keys []AccessControlPolicyAPIKeyKey `json:"keys,omitempty"`
 	// ForwardHeaders instructs the middleware to forward key metadata as header values upon successful authentication.
 	ForwardHeaders map[string]string `json:"forwardHeaders,omitempty"`
