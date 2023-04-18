@@ -66,7 +66,7 @@ func newControllerCmd() controllerCmd {
 		&cli.StringFlag{
 			Name:    flagPlatformIdentityProviderURL,
 			Usage:   "The URL used to set the `issuer` property of OIDC ACPs protecting dev portals",
-			Value:   "https://auth.hub.traefik.io",
+			Value:   "https://sso.portal.hub.traefik.io",
 			EnvVars: []string{strcase.ToSNAKE(flagPlatformIdentityProviderURL)},
 			Hidden:  true,
 		},
